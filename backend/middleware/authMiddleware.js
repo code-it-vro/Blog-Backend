@@ -1,18 +1,20 @@
 const jwt = require("jsonwebtoken");
 
-module.exports = (req , res , next) => {
+const authMiddleware = (req, res, next) => {
+  try {
     const token = req.header("Authorization");
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: "You are not authorized" });
+    }
 
-    // here we are simply trying to check if the token is present then we will return it by verifying it else we will return an error
-    
-    if(!token){
-        return res.status(401).json({message : "Unauthorized"});
-    }
-    try{
-        const decoded = jwt.verify(token , process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
-    }catch(err){
-        return res.status(401).json({message : "Unauthorized"});
-    }
-}
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({ message: "Unauthorized might be token is not valid" });
+  }
+};
+
+module.exports = authMiddleware;
